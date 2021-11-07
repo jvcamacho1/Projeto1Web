@@ -1,9 +1,6 @@
 
-# ProjetoWeb 1 - Html+Css - José Camacho
+# ProjetoWeb 2 - Ajax e JS - José Camacho
 
 José Victor Xavier Camacho.
 
-Primeiro projeto utilizando apenas html e CSS.
-
-Site utilizado como base:
-"https://rastreio.megamamute.com.br/"
+Segundo projeto usando Ajax e JS
