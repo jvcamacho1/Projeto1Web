@@ -9,7 +9,7 @@ app.use(express.json());
 
 mongoose
   .connect(
-    "mongodb+srv://jvcamacho:jvcamacho090299@C@cluster0.gnso7.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    "mongodb+srv://tester:teste123@cluster0.fy1ws.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
   )
   .then(() => console.log("DB Connected!"))
   .catch((err) => {
