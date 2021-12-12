@@ -2,8 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const routes = require("./router");
 const cors = require("cors");
-
-const port = process.env.PORT || 3000
 const app = express();
 app.use(cors());
 
@@ -22,4 +20,4 @@ mongoose
 
 app.use("/api", routes);
 
-app.listen(port);
+app.listen(3000);
