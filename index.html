@@ -57,6 +57,7 @@
       <input type="password" name="password" id="passwordMobile">
       </div>
     <button id="ajaxButton2" type="button">Login</button>
+    <button id="ajaxButton3" type="button">Registrar</button>
     </div>
   </div>
 
@@ -77,6 +78,9 @@
       </div>
     </div>
   </div>
+  <div>
+    <div id="bookForm"></div>
+  </div>
   <div class="footer"></div>
 </body>
 <script>
@@ -85,8 +89,10 @@
     var infoBook = [];
     document.getElementById("ajaxButton").addEventListener('click', getElements);
     document.getElementById("ajaxButton2").addEventListener('click', getElements);
+    document.getElementById("ajaxButton3").addEventListener('click', verifyFields);
     document.getElementById('findBooks').addEventListener('click', getBooks)
     document.addEventListener('DOMContentLoaded', testFunction)
+    getUserRole()
 
     function testFunction() {
        if(localStorage.getItem('token')){
@@ -110,6 +116,20 @@
         makeRequest(login, password)
       }
     }
+
+    function verifyFields() {
+      var login = document.getElementById("login").value || document.getElementById("loginMobile").value
+      var password = document.getElementById("password").value || document.getElementById("passwordMobile").value
+      if ((login || password) == ' ' || (login.length || password.length)<3) {
+        alert("Usuario ou senha inválido")
+        document.getElementById("login").value = ""
+        document.getElementById("password").value = ""
+        document.getElementById("loginMobile").value = ""
+        document.getElementById("passwordMobile").value = ""
+      }else{
+        registerRequest(login, password)
+      }
+    }
   
     function makeRequest(login, password) {
       httpRequest = new XMLHttpRequest();
@@ -119,19 +139,33 @@
         return false;
       }
       httpRequest.onreadystatechange = alertContents;
-      httpRequest.open('POST', 'https://reqres.in/api/login');
+      httpRequest.open('POST', 'http://localhost:3000/api/login');
       httpRequest.setRequestHeader("Content-Type", "application/json");
-      httpRequest.send(JSON.stringify({email:login, password: password}));
+      httpRequest.send(JSON.stringify({username:login, password: password}));
+    }
+
+    function registerRequest(login, password) {
+      httpRequest = new XMLHttpRequest();
+  
+      if (!httpRequest) {
+        alert('Cannot create an XMLHTTP instance');
+        return false;
+      }
+      httpRequest.onreadystatechange = handleRegister;
+      httpRequest.open('POST', 'http://localhost:3000/api/register');
+      httpRequest.setRequestHeader("Content-Type", "application/json");
+      httpRequest.send(JSON.stringify({username:login, password: password}));
     }
   
     function alertContents() {
       if (httpRequest.readyState === XMLHttpRequest.DONE) {
+        const response = JSON.parse(httpRequest.responseText)
         if (httpRequest.status === 200) {
-          var response = JSON.parse(httpRequest.responseText)
           if(localStorage.getItem('token')){
             alert('Usuário já logado')
           } else {
             localStorage.setItem('token', response.token)
+            getUserRole()
             testFunction()
           }
         } else {
@@ -140,19 +174,128 @@
       }
     }
 
-    function getBooks() {
+    function getUserRole() {
       httpRequest = new XMLHttpRequest();
-      infoBook = []
+  
+      if (!httpRequest) {
+        alert('Cannot create an XMLHTTP instance');
+        return false;
+      }
+      httpRequest.onreadystatechange = handleUserRole;
+      httpRequest.open('GET', 'http://localhost:3000/api/role');
+      httpRequest.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`)
+      httpRequest.send();
+    }
+
+    function handleUserRole() {
+      if (httpRequest.readyState === XMLHttpRequest.DONE) {
+        const response = JSON.parse(httpRequest.responseText)
+        if (httpRequest.status === 200) {
+          if(response.role === 'admin') {
+            console.log('Entered here')
+            var bookForm = document.getElementById('bookForm');
+            var titleForm = document.createElement('h2')
+            var descriptionForm = document.createElement('h2')
+            var authorForm = document.createElement('h2')
+
+            titleForm.appendChild(document.createTextNode("Título: "))
+            var titleInput = document.createElement("input")
+            titleInput.setAttribute("id", "titleInput")
+            titleForm.appendChild(titleInput)
+
+            descriptionForm.appendChild(document.createTextNode("Descrição: "))
+            var descriptionInput = document.createElement("input")
+            descriptionInput.setAttribute("id", "descriptionInput")
+            descriptionForm.appendChild(descriptionInput)
+
+            authorForm.appendChild(document.createTextNode("Autor: "))
+            var authorInput = document.createElement("input")
+            authorInput.setAttribute("id", "authorInput")
+            authorForm.appendChild(authorInput)
+
+            var createBookButtom = document.createElement("input")
+            createBookButtom.setAttribute("name", "Adicionar Livro")
+            createBookButtom.setAttribute("class", "botao")
+            createBookButtom.setAttribute("type", "button")
+            createBookButtom.setAttribute("value", "Adicionar Livro")
+            createBookButtom.addEventListener('click', addBook)
+
+            bookForm.appendChild(titleForm)
+            bookForm.appendChild(descriptionForm)
+            bookForm.appendChild(authorForm)
+            bookForm.appendChild(createBookButtom)
+          }
+        } else {
+          alert('Erro inesperado')
+        }
+      }
+    }
+
+    function addBook() {
+      const title = document.getElementById("titleInput").value
+      const description = document.getElementById("descriptionInput").value
+      const author = document.getElementById("authorInput").value
+
+      httpRequest = new XMLHttpRequest();
+  
+      if (!httpRequest) {
+        alert('Cannot create an XMLHTTP instance');
+        return false;
+      }
+      if(title === ""|| description === ""|| author === ""){
+        alert('Todos os campos devem ser preenchidos')
+      }else {
+        httpRequest.onreadystatechange = handleAddBook;
+        httpRequest.open('POST', 'http://localhost:3000/api/books/register');
+        httpRequest.setRequestHeader("Content-Type", "application/json");
+        httpRequest.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`)
+        httpRequest.send(JSON.stringify({author: author, description: description, title: title}));
+      }
+    }
+
+    function handleAddBook () {
+      if (httpRequest.readyState === XMLHttpRequest.DONE) {
+        const response = JSON.parse(httpRequest.responseText)
+        if (response.message) {
+          alert(response.message)
+        } else {
+          document.getElementById("titleInput").value = ""
+          document.getElementById("descriptionInput").value = ""
+          document.getElementById("authorInput").value = ""
+          alert('Livro adicionado com sucesso');
+        }
+      }
+    }
+
+    function handleRegister() {
+      if (httpRequest.readyState === XMLHttpRequest.DONE) {
+        console.log('Response',  httpRequest)
+        const response = JSON.parse(httpRequest.responseText)
+        if(response.message) {
+          alert(response.message)
+          return
+        } else {
+          alert('Usuário cadastrado com sucesso')
+          document.getElementById("login").value = ""
+          document.getElementById("password").value = ""
+          document.getElementById("loginMobile").value = ""
+          document.getElementById("passwordMobile").value = ""
+        }
+      }
+    }
+
+    function getBooks() {
+      httpRequest = new XMLHttpRequest()
       var bookName = document.getElementById('bookName').value
       if(localStorage.getItem('token')){
-        bookname = bookName.replace(/\s/g, '+')
         if (!httpRequest) {
           alert('Cannot create an XMLHTTP instance');
           return false;
         }
         httpRequest.onreadystatechange = requestResponse;
-        httpRequest.open('GET', `http://openlibrary.org/search.json?title=${bookName}`);
-        httpRequest.send();
+        httpRequest.open('GET', `http://localhost:3000/api/books/find?title=${bookName}`);
+        httpRequest.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`)
+        httpRequest.send()
       }else{
         alert("faça login para procurar um livro")
         document.getElementById("bookName").value = ""
@@ -163,13 +306,23 @@
       if (httpRequest.readyState === XMLHttpRequest.DONE) {
         if (httpRequest.status === 200) {
           var response = JSON.parse(httpRequest.responseText)
-          if(response.docs[0]){
-            var bookId = response.docs[0].key.split('/')[2]
-            getBookById(bookId)
-          } else {
-            alert("Livro não encontrado")
-            document.getElementById("bookName").value = ""
+          if(response.message) {
+            alert(response.message)
+            return
           }
+          var list = document.getElementById('livros');
+          var entry1 = document.createElement('h2')
+          var entry2 = document.createElement('h3')
+          var entry3 = document.createElement('h4')
+          entry1.appendChild(document.createTextNode("Título: "))
+          entry1.appendChild(document.createTextNode(response.title))
+          list.appendChild(entry1)
+          entry2.appendChild(document.createTextNode("Descrição: "))
+          entry2.appendChild(document.createTextNode(response.description))
+          list.appendChild(entry2)
+          entry3.appendChild(document.createTextNode("Autor: "))
+          entry3.appendChild(document.createTextNode(response.author))
+          list.appendChild(entry3)
         } else {
           alert('Livro não encontrado')
           document.getElementById("bookName").value = ""
