@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "heroku-postbuild": "npm install --prefix client && npm run build --prefix client"
+    "heroku-postbuild": "yarn install --prefix client && npm run build --prefix client"
   },
   "dependencies": {
     "cors": "^2.8.5",
