@@ -5,6 +5,7 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
+const port = process.env.PORT || 3000
 app.use(express.json());
 
 mongoose
@@ -20,4 +21,4 @@ mongoose
 
 app.use("/api", routes);
 
-app.listen(3000);
+app.listen(port);
