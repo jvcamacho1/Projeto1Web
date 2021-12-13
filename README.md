@@ -1,6 +1,7 @@
 
-# ProjetoWeb 2 - Ajax e JS - José Camacho
+# ProjetoWeb 3 - Express e Node.js - José Camacho
 
 José Victor Xavier Camacho.
 
-Segundo projeto usando Ajax e JS
+Segundo projeto usando Express e Node.js
+
